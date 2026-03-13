@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/seckill_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 050612
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+server:
+  port: 8081
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.user_service.entity
+
+jwt:
+  secret: user-service-secret-key-change-in-prod
+  expire-seconds: 7200
