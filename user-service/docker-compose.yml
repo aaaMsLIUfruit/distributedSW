@@ -1,0 +1,46 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: seckill-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "050612"
+      MYSQL_DATABASE: "seckill_db"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./deploy/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p050612"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  user-service:
+    build: .
+    container_name: user-service
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: seckill_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "050612"
+      JWT_SECRET: "your-very-strong-secret"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: seckill-nginx
+    depends_on:
+      - user-service
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  mysql_data:

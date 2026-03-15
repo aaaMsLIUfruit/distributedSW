@@ -2,9 +2,9 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/seckill_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: 050612
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DB:seckill_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:050612}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 server:
@@ -15,5 +15,5 @@ mybatis:
   type-aliases-package: com.example.user_service.entity
 
 jwt:
-  secret: user-service-secret-key-change-in-prod
+  secret: ${JWT_SECRET:user-service-secret-key-change-in-prod}
   expire-seconds: 7200
