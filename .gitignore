@@ -1,0 +1,49 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.springBeans
+.sts4-cache
+.apt_generated
+.factorypath
+
+# Build
+*.jar
+*.war
+!**/maven-wrapper.jar
+*.ear
+*.class
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# JMeter
+*.jtl
+results.jtl
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.local
+*.env
+
+# Docker (optional)
+# docker-compose.override.yml
