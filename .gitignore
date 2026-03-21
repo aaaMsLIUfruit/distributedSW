@@ -18,15 +18,15 @@ pom.xml.next
 .sts4-cache
 .apt_generated
 .factorypath
+out/
+bin/
 
 # Build
 *.jar
 *.war
-!**/maven-wrapper.jar
 *.ear
 *.class
-!**/src/main/**/target/
-!**/src/test/**/target/
+!**/maven-wrapper.jar
 
 # JMeter
 *.jtl
@@ -45,5 +45,27 @@ Thumbs.db
 .env.local
 *.env
 
-# Docker (optional)
-# docker-compose.override.yml
+# Docker
+docker-compose.override.yml
+
+# Backup / temp
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+
+# H2 / embedded DB
+*.h2.db
+*.db
+
+# Node (if any frontend)
+node_modules/
+
+# Gradle (if ever used)
+.gradle/
+build/
