@@ -2,13 +2,25 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DB:seckill_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:050612}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    dynamic:
+      primary: master
+      datasource:
+        master:
+          url: jdbc:mysql://${MYSQL_MASTER_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:user_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+          username: ${MYSQL_USER:root}
+          password: ${MYSQL_PASSWORD:050612}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        slave:
+          url: jdbc:mysql://${MYSQL_SLAVE_HOST:localhost}:${MYSQL_SLAVE_PORT:3306}/${MYSQL_DB:user_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+          username: ${MYSQL_USER:root}
+          password: ${MYSQL_PASSWORD:050612}
+          driver-class-name: com.mysql.cj.jdbc.Driver
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+
+instance:
+  id: ${INSTANCE_ID:0}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

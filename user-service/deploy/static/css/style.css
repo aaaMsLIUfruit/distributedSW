@@ -1,0 +1,90 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #eee;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+main {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #60a5fa;
+}
+
+.card ul {
+    list-style: none;
+}
+
+.card li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card li:last-child {
+    border-bottom: none;
+}
+
+#pingBtn {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+#pingBtn:hover {
+    background: #2563eb;
+}
+
+#apiResult {
+    background: #0f172a;
+    padding: 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    color: #64748b;
+    font-size: 0.85rem;
+}

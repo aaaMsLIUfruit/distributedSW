@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: product-service
+  datasource:
+    dynamic:
+      primary: master
+      datasource:
+        master:
+          url: jdbc:mysql://${MYSQL_MASTER_HOST:localhost}:${MYSQL_PORT:3306}/product_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+          username: ${MYSQL_USER:root}
+          password: ${MYSQL_PASSWORD:050612}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        slave:
+          url: jdbc:mysql://${MYSQL_SLAVE_HOST:localhost}:${MYSQL_SLAVE_PORT:3306}/product_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+          username: ${MYSQL_USER:root}
+          password: ${MYSQL_PASSWORD:050612}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: 8083

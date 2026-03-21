@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品库存与秒杀系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>商品库存与秒杀系统</h1>
+        <p>动静分离演示 - 静态资源由 Nginx 直接返回</p>
+    </header>
+    <main>
+        <section class="card">
+            <h2>系统功能</h2>
+            <ul>
+                <li>用户注册 / 登录</li>
+                <li>商品列表 / 商品详情</li>
+                <li>库存查询 / 扣减</li>
+                <li>普通下单 / 秒杀下单</li>
+            </ul>
+        </section>
+        <section class="card">
+            <h2>API 状态</h2>
+            <button id="pingBtn">检测后端</button>
+            <pre id="apiResult">点击按钮调用 /api/users/ping</pre>
+        </section>
+    </main>
+    <footer>© 分布式系统课程作业</footer>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

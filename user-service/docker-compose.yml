@@ -1,46 +1,111 @@
 services:
-  mysql:
+  redis:
+    image: redis:7-alpine
+    container_name: seckill-redis
+    ports:
+      - "6379:6379"
+
+  mysql-master:
     image: mysql:8.0
-    container_name: seckill-mysql
+    container_name: seckill-mysql-master
     environment:
       MYSQL_ROOT_PASSWORD: "050612"
-      MYSQL_DATABASE: "seckill_db"
+      MYSQL_DATABASE: "user_db"
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./deploy/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_master_data:/var/lib/mysql
+      - ./deploy/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./deploy/mysql/master.cnf:/etc/mysql/conf.d/master.cnf:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p050612"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  user-service:
-    build: .
-    container_name: user-service
+  mysql-slave:
+    image: mysql:8.0
+    container_name: seckill-mysql-slave
     environment:
-      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: "050612"
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_slave_data:/var/lib/mysql
+      - ./deploy/mysql/slave.cnf:/etc/mysql/conf.d/slave.cnf:ro
+      - ./deploy/mysql/slave-init.sh:/docker-entrypoint-initdb.d/02-slave-init.sh:ro
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+
+  user-service-1:
+    build: .
+    container_name: user-service-1
+    environment:
+      INSTANCE_ID: "1"
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_SLAVE_HOST: mysql-slave
       MYSQL_PORT: 3306
-      MYSQL_DB: seckill_db
+      MYSQL_DB: user_db
       MYSQL_USER: root
       MYSQL_PASSWORD: "050612"
       JWT_SECRET: "your-very-strong-secret"
     depends_on:
-      mysql:
+      mysql-master:
         condition: service_healthy
     ports:
       - "8081:8081"
+
+  user-service-2:
+    build: .
+    container_name: user-service-2
+    environment:
+      INSTANCE_ID: "2"
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_SLAVE_HOST: mysql-slave
+      MYSQL_PORT: 3306
+      MYSQL_DB: user_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "050612"
+      JWT_SECRET: "your-very-strong-secret"
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+    ports:
+      - "8082:8081"
+
+  product-service:
+    build: ../product-service
+    container_name: product-service
+    environment:
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_SLAVE_HOST: mysql-slave
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "050612"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8083:8083"
 
   nginx:
     image: nginx:1.27-alpine
     container_name: seckill-nginx
     depends_on:
-      - user-service
+      - user-service-1
+      - user-service-2
+      - product-service
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/static:/usr/share/nginx/static:ro
 
 volumes:
-  mysql_data:
+  mysql_master_data:
+  mysql_slave_data:

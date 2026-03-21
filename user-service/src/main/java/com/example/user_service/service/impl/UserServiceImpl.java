@@ -1,5 +1,6 @@
 package com.example.user_service.service.impl;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.example.user_service.dto.LoginRequest;
 import com.example.user_service.dto.RegisterRequest;
 import com.example.user_service.entity.User;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @DS("master")
     public Long register(RegisterRequest request) {
         User exist = userMapper.findByUsername(request.getUsername());
         if (exist != null) {
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @DS("slave")
     public UserLoginVO login(LoginRequest request) {
         User user = userMapper.findByUsername(request.getUsername());
         if (user == null) {
