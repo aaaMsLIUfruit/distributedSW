@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: order-service
+  # ShardingSphere-JDBC：逻辑库路由到 order_db_0 / order_db_1，逻辑表 seckill_orders 路由到 seckill_orders_0..3
+  # 具体分片规则见 classpath:shardingsphere.yaml（可按环境修改其中 jdbcUrl / 账号）
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shardingsphere.yaml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${KAFKA_GROUP_ID:seckill-order-group}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.example.order_service.*"
+        spring.json.value.default.type: com.example.order_service.dto.SeckillOrderMessage
+
+seckill:
+  kafka:
+    topic: ${SECKILL_TOPIC:seckill-order-topic}
+
+inventory:
+  service:
+    base-url: ${INVENTORY_SERVICE_BASE_URL:http://localhost:8084}
+
+server:
+  port: ${SERVER_PORT:8085}

@@ -1,0 +1,46 @@
+# ShardingSphere-JDBC 分片配置（逻辑表：seckill_orders）
+# - 分库：按 user_id，表达式 user_id % 2 -> ds_0 / ds_1
+# - 分表：按 order_id，表达式 order_id % 4 -> seckill_orders_0 .. seckill_orders_3
+# 请先创建库 order_db_0、order_db_1，并在每个库中建齐 4 张物理表（见 order-sharding-schema.sql）。
+# 若 MySQL 地址/账号与默认不一致，请直接修改下方 jdbcUrl / username / password。
+
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/order_db_0?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: "050612"
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/order_db_1?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: "050612"
+
+rules:
+  - !SHARDING
+    tables:
+      seckill_orders:
+        actualDataNodes: ds_${0..1}.seckill_orders_${0..3}
+        databaseStrategy:
+          standard:
+            shardingColumn: user_id
+            shardingAlgorithmName: seckill-db-inline
+        tableStrategy:
+          standard:
+            shardingColumn: order_id
+            shardingAlgorithmName: seckill-tbl-inline
+    shardingAlgorithms:
+      seckill-db-inline:
+        type: INLINE
+        props:
+          algorithm-expression: ds_${user_id % 2}
+      seckill-tbl-inline:
+        type: INLINE
+        props:
+          algorithm-expression: seckill_orders_${order_id % 4}
+
+props:
+  # 调试分片路由时可改为 true，观察实际改写后的 SQL
+  sql-show: false
