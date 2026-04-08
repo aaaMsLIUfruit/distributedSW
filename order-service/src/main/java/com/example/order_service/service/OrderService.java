@@ -22,6 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 秒杀一致性说明（最终一致，非跨服务单事务）：
+ * <ul>
+ *   <li>同步阶段：Redis 预扣（库存服务）→ 发 Kafka；预扣失败则整条链路失败，与 DB 无关。</li>
+ *   <li>异步阶段：消费消息 → 远程 confirm 扣 MySQL → 本地 insert 订单；@Transactional 仅保证订单库内 insert 等与本地库一致。</li>
+ *   <li>confirm 与 insert 分属两服务/两库，不是分布式 ACID；confirm 失败会 rollback Redis 预扣，与「未落单」对齐。</li>
+ *   <li>消费幂等：先按 orderId 查重，避免 Kafka 重复投递导致重复建单、重复扣库。</li>
+ *   <li>边界：若 confirm 已成功而本方法后续 insert 抛错，本地事务回滚订单行，但库存服务已扣减，需运维/补偿任务对齐（当前未自动回补 DB）。</li>
+ * </ul>
+ */
 @Service
 @SuppressWarnings("null")
 public class OrderService {
@@ -48,7 +58,8 @@ public class OrderService {
     }
 
     /**
-     * 秒杀入口：先调用库存服务预扣，再发 Kafka 异步创建订单。
+     * 秒杀入口：先调用库存服务 Redis 预扣，再发 Kafka 异步落单。
+     * 一致性：预扣成功才发消息，避免「消息已发但未占位」；削峰，DB 在消费阶段写入。
      */
     public ApiResponse<Map<String, Object>> seckill(SeckillOrderRequest request) {
         if (request.getUserId() == null || request.getProductId() == null) {
@@ -87,10 +98,12 @@ public class OrderService {
     }
 
     /**
-     * 消费 MQ 后执行：确认数据库扣减库存并写订单，保证最终一致性。
+     * 消费 MQ：远程扣库存库 + 本地写订单。顺序为先扣 MySQL 再 insert，与「预扣在 Redis」形成最终一致。
+     * @Transactional 仅作用于订单库；库存 HTTP 成功即已在库存服务提交，与本事务非同一原子单元。
      */
     @Transactional(rollbackFor = Exception.class)
     public void createOrderFromMessage(SeckillOrderMessage message) {
+        // Kafka 可能重复投递：已存在则直接返回，保证幂等
         SeckillOrder exists = seckillOrderMapper.selectByOrderId(message.getOrderId());
         if (exists != null) {
             return;
@@ -107,6 +120,7 @@ public class OrderService {
                 }
         );
         ApiResponse<Map<String, Object>> confirmBody = confirmResp.getBody();
+        // DB 扣减失败：回补 Redis 库存与限购计数，避免长期占库存与限购额度
         if (confirmBody == null || !Objects.equals(confirmBody.getCode(), 0)) {
             rollbackInventory(message);
             return;
@@ -122,6 +136,7 @@ public class OrderService {
         seckillOrderMapper.insert(order);
     }
 
+    /** confirm 失败时调用，回补 Redis 库存并释放限购额度（不回调 MySQL，因 confirm 未成功）。 */
     private void rollbackInventory(SeckillOrderMessage message) {
         String url = inventoryServiceBaseUrl
                 + "/api/inventories/seckill/rollback?userId=" + message.getUserId()

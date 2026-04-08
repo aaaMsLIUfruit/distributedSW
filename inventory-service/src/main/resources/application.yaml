@@ -13,3 +13,7 @@ spring:
 
 server:
   port: ${SERVER_PORT:8084}
+
+# 秒杀 Redis 预扣
+seckill:
+  per-user-max-quantity: ${SECKILL_PER_USER_MAX:1}
