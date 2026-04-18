@@ -1,0 +1,4 @@
+# 导入 Nacos：控制台「配置管理」→「+」→ Data ID 填 user-service.yaml，Group 填 DEFAULT_GROUP（或与 NACOS_GROUP 一致），配置格式 YAML，粘贴以下内容后发布。
+# 修改 demo.greeting 并「发布」后，调用 GET /api/users/demo/config（经网关则为 GET http://网关:8080/api/users/demo/config）应立即返回新文案。
+demo:
+  greeting: 来自 Nacos 配置中心的欢迎语（可随意修改后点发布验证动态刷新）

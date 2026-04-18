@@ -1,6 +1,14 @@
 spring:
   application:
     name: order-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
   # ShardingSphere-JDBC：逻辑库路由到 order_db_0 / order_db_1，逻辑表 seckill_orders 路由到 seckill_orders_0..3
   # 具体分片规则见 classpath:shardingsphere.yaml（可按环境修改其中 jdbcUrl / 账号）
   datasource:

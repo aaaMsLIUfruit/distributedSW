@@ -2,24 +2,45 @@ spring:
   application:
     name: api-gateway
   cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+    sentinel:
+      eager: true
     gateway:
       routes:
+        # lb:// 配合 LoadBalancer + Nacos Discovery，实例上下线时路由表自动更新
         - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          uri: lb://user-service
           predicates:
             - Path=/api/users/**
         - id: product-service
-          uri: ${PRODUCT_SERVICE_URL:http://localhost:8083}
+          uri: lb://product-service
           predicates:
             - Path=/api/products/**
         - id: inventory-service
-          uri: ${INVENTORY_SERVICE_URL:http://localhost:8084}
+          uri: lb://inventory-service
           predicates:
             - Path=/api/inventories/**
         - id: order-service
-          uri: ${ORDER_SERVICE_URL:http://localhost:8085}
+          uri: lb://order-service
           predicates:
             - Path=/api/orders/**
 
 server:
   port: ${SERVER_PORT:8080}
+
+# 网关 Sentinel 阈值（调小 flow-qps 或拉长 slow 接口 sleep 便于 JMeter 观察）
+traffic:
+  sentinel:
+    gateway:
+      user-route:
+        # 默认略高，避免与「慢调用压测」抢阈值；纯限流演示可改为 10～30
+        flow-qps: ${GATEWAY_USER_ROUTE_FLOW_QPS:120}
+        degrade-slow-rt-ms: ${GATEWAY_USER_ROUTE_DEGRADE_RT_MS:280}
+        degrade-min-requests: ${GATEWAY_USER_ROUTE_DEGRADE_MIN_REQ:8}
+        degrade-time-window-sec: ${GATEWAY_USER_ROUTE_DEGRADE_WINDOW_SEC:10}

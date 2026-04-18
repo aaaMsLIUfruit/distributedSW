@@ -1,6 +1,9 @@
 spring:
   application:
     name: user-service
+  cloud:
+    sentinel:
+      eager: true
   datasource:
     dynamic:
       primary: master
@@ -29,3 +32,19 @@ mybatis:
 jwt:
   secret: ${JWT_SECRET:user-service-secret-key-change-in-prod}
   expire-seconds: 7200
+
+# Nacos 配置中心可覆盖 demo.greeting；配合 @RefreshScope 发布配置后立即生效
+demo:
+  greeting: ${DEMO_GREETING:本地默认欢迎语（未在 Nacos 下发 demo.greeting 时显示）}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# 服务侧 Sentinel：/api/users/stress/hot 资源 QPS，调小便于压测触发 blockHandler
+traffic:
+  sentinel:
+    user-service:
+      hot-resource-qps: ${USER_STRESS_HOT_QPS:8}
